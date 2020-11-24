@@ -1,0 +1,27 @@
+cargo-features = ["strip"]
+
+[package]
+name = "lgm-1"
+version = "0.1.0"
+authors = ["Marvin Countryman <marvinc@siqinc.com>"]
+edition = "2018"
+
+[profile.release]
+lto = true
+strip = "symbols"
+debug = false
+panic = "abort"
+opt-level = "z"
+codegen-units = 1
+debug-assertions = false
+
+[dependencies]
+ntapi = { version = "0.3.6", features = ["nightly"] }
+
+[dependencies.winapi]
+version = "0.3"
+features = [
+  "ntdef",
+  "winnt",
+  "dbghelp"
+]
