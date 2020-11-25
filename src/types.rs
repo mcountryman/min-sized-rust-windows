@@ -2,6 +2,17 @@ use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, ULONG, UNICODE_STRING, USHORT};
 use winapi::um::winnt::{HANDLE, PVOID};
 
 #[repr(C)]
+pub struct PEB {
+  pub InheritedAddressSpace: BOOLEAN,
+  pub ReadImageFileExecOptions: BOOLEAN,
+  pub BeingDebugged: BOOLEAN,
+  pub BitField: BOOLEAN,
+  pub Mutant: HANDLE,
+  pub ImageBaseAddress: PVOID,
+  pub Ldr: *mut PEB_LDR_DATA,
+}
+
+#[repr(C)]
 pub struct LDR_DATA_TABLE_ENTRY_u1 {
   InInitializationOrderLinks: LIST_ENTRY,
   InProgressLinks: LIST_ENTRY,

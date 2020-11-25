@@ -12,7 +12,8 @@ use core::panic::PanicInfo;
 
 use ntapi::winapi_local::um::winnt::NtCurrentTeb;
 
-use crate::types::{LDR_DATA_TABLE_ENTRY, PEB_LDR_DATA};
+use crate::types::{LDR_DATA_TABLE_ENTRY, PEB, PEB_LDR_DATA};
+use core::mem::MaybeUninit;
 use winapi::ctypes::c_void;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::ntdef::LIST_ENTRY;
@@ -42,8 +43,9 @@ type WriteFileFn = extern "system" fn(
 #[no_mangle]
 extern "C" fn _mainCRTStartup() {
   unsafe {
-    let peb = /* FUCK */;
-    let ldr: *mut PEB_LDR_DATA = (*peb).Ldr;
+    let peb = MaybeUninit::<PEB>::uninit();
+    asm!("mov {}, gs:[0x60]", out(reg) peb);
+    let ldr: *mut PEB_LDR_DATA = peb.assume_init().Ldr;
     let lst = (*ldr).InLoadOrderModuleList;
 
     let kernel_32 = (*(*lst.Flink).Flink).Flink;
