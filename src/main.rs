@@ -3,17 +3,19 @@
 #![feature(asm)]
 #![windows_subsystem = "console"]
 
+mod types;
+
 use core::mem::transmute;
 use core::ptr::null_mut;
 
 use core::panic::PanicInfo;
-use ntapi::ntldr::LDR_DATA_TABLE_ENTRY;
-use ntapi::ntpebteb::TEB;
-use ntapi::ntpsapi::PEB_LDR_DATA;
-use ntapi::winapi::shared::ntdef::LIST_ENTRY;
+
 use ntapi::winapi_local::um::winnt::NtCurrentTeb;
+
+use crate::types::{LDR_DATA_TABLE_ENTRY, PEB_LDR_DATA};
 use winapi::ctypes::c_void;
 use winapi::shared::minwindef::DWORD;
+use winapi::shared::ntdef::LIST_ENTRY;
 use winapi::um::winnt::{
   HANDLE, IMAGE_DIRECTORY_ENTRY_EXPORT, IMAGE_DOS_HEADER, IMAGE_DOS_SIGNATURE,
   IMAGE_EXPORT_DIRECTORY, IMAGE_NT_HEADERS64, IMAGE_NT_OPTIONAL_HDR_MAGIC,
@@ -40,8 +42,7 @@ type WriteFileFn = extern "system" fn(
 #[no_mangle]
 extern "C" fn _mainCRTStartup() {
   unsafe {
-    let teb: *mut TEB = NtCurrentTeb();
-    let peb = (*teb).ProcessEnvironmentBlock;
+    let peb = /* FUCK */;
     let ldr: *mut PEB_LDR_DATA = (*peb).Ldr;
     let lst = (*ldr).InLoadOrderModuleList;
 
