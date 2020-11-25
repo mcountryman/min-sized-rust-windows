@@ -23,5 +23,8 @@ version = "0.3"
 features = [
   "ntdef",
   "winnt",
-  "dbghelp"
+  "dbghelp",
+  "minwindef",
+
+  "impl-debug"
 ]
