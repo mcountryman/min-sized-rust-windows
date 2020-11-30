@@ -1,4 +1,7 @@
-use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, ULONG, UNICODE_STRING, USHORT};
+#![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
+
+use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, ULONG};
 use winapi::um::winnt::{HANDLE, PVOID};
 
 #[repr(C)]
@@ -13,7 +16,7 @@ pub struct PEB {
 }
 
 #[repr(C)]
-pub struct LDR_DATA_TABLE_ENTRY_u1 {
+pub union LDR_DATA_TABLE_ENTRY_u1 {
   InInitializationOrderLinks: LIST_ENTRY,
   InProgressLinks: LIST_ENTRY,
 }
