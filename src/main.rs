@@ -141,7 +141,7 @@ unsafe fn is_eq(lhs: *mut c_char, rhs: &[u8]) -> bool {
 #[allow(unused_attributes)]
 #[cfg(not(debug_assertions))]
 #[cfg(target_env = "msvc")]
-#[link_args = "/ALIGN=512 /MERGE:.rdata=.text /MERGE:.pdata=.text /NODEFAULTLIB"]
+#[link_args = "/MERGE:.rdata=.text /MERGE:.pdata=.text /NODEFAULTLIB"]
 extern "C" {}
 
 #[cfg(not(debug_assertions))]
