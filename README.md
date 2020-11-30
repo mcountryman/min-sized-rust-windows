@@ -7,8 +7,7 @@ smaller on windows (https://github.com/pts/pts-tinype).
 `1k` :sunglasses:
 
 ```powershell
-lgm-1 on  master is � v0.1.0 via � v1.49.0-nightly took 12s
-❯ cargo build --release && (Get-Item ".\target\release\lgm-1.exe").Length
+❯ cargo build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
     Finished release [optimized] target(s) in 0.02s
 1024
 ```

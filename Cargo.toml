@@ -1,7 +1,7 @@
 cargo-features = ["strip"]
 
 [package]
-name = "lgm-1"
+name = "min-sized-rust-windows"
 version = "0.1.0"
 authors = ["Marvin Countryman <marvinc@siqinc.com>"]
 edition = "2018"
