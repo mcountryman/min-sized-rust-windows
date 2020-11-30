@@ -48,10 +48,19 @@ fn main() {
     let ldr: *mut PEB_LDR_DATA = (*peb).Ldr;
     let lst = (*ldr).InLoadOrderModuleList;
 
+    // .InLoadOrderModuleList contains the following in order
+    // 1. `min-sized-rust.exe`
+    // 2. `ntdll.dll`
+    // 3. `kernel32.dll`
+    // ...
     let kernel_32 = (*(*lst.Flink).Flink).Flink;
+
+    // Resolve `kernel32.GetStdHandle`
     let get_std_handle =
       get_export_fn::<GetStdHandleFn>(kernel_32, b"GetStdHandle\0").unwrap();
     let get_std_handle: GetStdHandleFn = transmute(get_std_handle);
+
+    // Resolve `kernel32.WriteFile`
     let write_file = get_export_fn::<WriteFileFn>(kernel_32, b"WriteFile\0") //
       .unwrap();
     let write_file: WriteFileFn = transmute(write_file);
@@ -70,11 +79,10 @@ fn main() {
   }
 }
 
+/// Resolve ptr to `PEB`.
 unsafe fn get_peb() -> *mut PEB {
-  #[cfg(target_arch = "x86_64")]
   let off: u64;
 
-  #[cfg(target_arch = "x86_64")]
   llvm_asm!(
     "mov $0, gs:[$1]"
     : "=r"(off)
@@ -83,9 +91,11 @@ unsafe fn get_peb() -> *mut PEB {
     : "intel"
   );
 
+  // just ignore this "uinitialized" value here..
   off as *mut PEB
 }
 
+/// Resolve export addr from `LIST_ENTRY` by name using supplied `import`.
 unsafe fn get_export_fn<U: Sized>(
   entry: *mut LIST_ENTRY,
   import: &[u8],
@@ -93,15 +103,19 @@ unsafe fn get_export_fn<U: Sized>(
   let entry = entry as *mut LDR_DATA_TABLE_ENTRY;
   let base = (*entry).DllBase as *mut c_char;
 
+  // Get IMAGE_DOS_HEADER
   let dos_header: PIMAGE_DOS_HEADER = base as *mut IMAGE_DOS_HEADER;
   let dos_header = *dos_header;
 
+  // Get IMAGE_NT_HEADERS
   let nt_header: PIMAGE_NT_HEADERS =
     base.offset(dos_header.e_lfanew as isize) as *mut IMAGE_NT_HEADERS;
   let nt_header = *nt_header;
 
+  // Get IMAGE_OPTIONALHEADERS
   let optional_header = nt_header.OptionalHeader;
 
+  // Resolve `IMAGE_EXPORT_DIRECTORY` from optional `DataDirectory` index
   let export = optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT as usize];
   let export = export.VirtualAddress as usize;
   let export = base.add(export);
@@ -111,11 +125,16 @@ unsafe fn get_export_fn<U: Sized>(
   let export_names = base.add((*export).AddressOfNames as usize) as *const u32;
   let export_ords = base.add((*export).AddressOfNameOrdinals as usize) as *const u16;
 
+  // Iterate over exports (probably didn't save anything by inf. loop here :shrug:)
   for i in 0.. {
+    // Resolve name VA using RVA index
     let name = *export_names.add(i);
     let name = transmute(base.add(name as usize));
-    if is_eq(name, import) {
+
+    if strcmp(name, import) {
+      // Resolve ordinal
       let ord = *export_ords.add(i);
+      // Resolve export addr VA from RVA using ordinal
       let addr = *export_addrs.add(ord as usize);
       let addr = base.add(addr as usize) as *mut c_void;
 
@@ -126,7 +145,8 @@ unsafe fn get_export_fn<U: Sized>(
   None
 }
 
-unsafe fn is_eq(lhs: *mut c_char, rhs: &[u8]) -> bool {
+/// Simple strcmp
+unsafe fn strcmp(lhs: *mut c_char, rhs: &[u8]) -> bool {
   let mut rhs = rhs.as_ptr();
   let mut lhs = lhs as *mut u8;
 
@@ -138,6 +158,7 @@ unsafe fn is_eq(lhs: *mut c_char, rhs: &[u8]) -> bool {
   return *rhs == *lhs;
 }
 
+/// Magic linker flags to merge sections and prevent linking _anything_
 #[allow(unused_attributes)]
 #[cfg(not(debug_assertions))]
 #[cfg(target_env = "msvc")]
