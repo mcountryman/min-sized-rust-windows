@@ -1,5 +1,5 @@
 # Minimum Binary Size Windows
-An example of how small a rust binary can get on windows 10. I'm in no ways an expert and 
+An example of how small a rust binary can get on windows 10. This isn't something meant to be used in production more, of a challenge.  I'm in no ways an expert and 
 [I have seen windows binaries get smaller on windows](https://github.com/pts/pts-tinype). If
 you can go smaller let me know how you did it :grin:
 
@@ -7,6 +7,9 @@ you can go smaller let me know how you did it :grin:
 `1k` :sunglasses:
 
 ```powershell
+❯ cargo run --release
+Hello World!
+
 ❯ cargo build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
     Finished release [optimized] target(s) in 0.02s
 1024
