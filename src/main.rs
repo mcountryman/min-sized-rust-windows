@@ -83,6 +83,13 @@ fn main() {
 unsafe fn get_peb() -> *mut PEB {
   let peb: *mut PEB;
 
+  #[cfg(target_arch = "x86")]
+  asm!(
+    "mov {}, fs:[0x30]",
+    out(reg) peb,
+  );
+
+  #[cfg(target_arch = "x86_64")]
   asm!(
     "mov {}, gs:[0x60]",
     out(reg) peb,
@@ -152,7 +159,7 @@ unsafe fn strcmp(lhs: *mut c_char, rhs: &[u8]) -> bool {
     lhs = lhs.add(1);
   }
 
-  return *rhs == *lhs;
+  *rhs == *lhs
 }
 
 /// Magic linker flags to merge sections and prevent linking _anything_
