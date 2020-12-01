@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), no_std)]
 #![cfg_attr(not(debug_assertions), no_main)]
-#![feature(llvm_asm)]
+#![feature(asm)]
 #![feature(link_args)]
 #![windows_subsystem = "console"]
 
@@ -81,18 +81,15 @@ fn main() {
 
 /// Resolve ptr to `PEB`.
 unsafe fn get_peb() -> *mut PEB {
-  let off: u64;
+  let peb: *mut PEB;
 
-  llvm_asm!(
-    "mov $0, gs:[$1]"
-    : "=r"(off)
-    : "ri"(0x60)
-    :
-    : "intel"
+  asm!(
+    "mov {}, gs:[0x60]",
+    out(reg) peb,
   );
 
   // just ignore this "uinitialized" value here..
-  off as *mut PEB
+  peb
 }
 
 /// Resolve export addr from `LIST_ENTRY` by name using supplied `import`.
