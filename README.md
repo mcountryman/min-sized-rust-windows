@@ -21,6 +21,8 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * [`no_std`](https://github.com/johnthagen/min-sized-rust#removing-libstd-with-no_std)
 * [`no_main`](https://github.com/johnthagen/min-sized-rust#remove-corefmt-with-no_main-and-careful-usage-of-libstd)
 * Merge `.rdata` and `.pdata` sections into `.text` section linker flag.
+    * Using the LINK.exe [`/MERGE`](https://docs.microsoft.com/en-us/cpp/build/reference/merge-combine-sections?view=msvc-160)     
+      flag found at the bottom of `main.rs`.
     * Windows 10 section size appears to be locked at `1024`, so to avoid anything larger
     we merge everything into the `.text` section.
 * `PEB` export walker
