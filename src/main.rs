@@ -22,20 +22,40 @@ extern "C" fn mainCRTStartup() -> u32 {
     let peb: *mut PEB;
     let mut status: IO_STATUS_BLOCK = core::mem::zeroed();
 
+    // Get PEB from reserved register `GS`
     asm!(
       "mov {}, gs:[0x60]",
       out(reg) peb,
     );
 
+    // Get STDOUT handle from PEB
     let handle = (*(*peb).ProcessParameters).StandardOutput;
 
     asm!(
+      // ZwWriteFile(
+      //    HANDLE           FileHandle,    // rcx
+      //    HANDLE           Event,         // rdx
+      //    PIO_APC_ROUTINE  ApcRoutine,    // r8
+      //    PVOID            ApcContext,    // r9
+      //    PIO_STATUS_BLOCK IoStatusBlock, // rsp+0x28
+      //    PVOID            Buffer,        // rsp+0x30
+      //    ULONG            Length,        // rsp+0x38
+      //    PLARGE_INTEGER   ByteOffset,    // rsp+0x40 - should be 0 at time of syscall
+      //    PULONG           Key            // rsp+0x48 - should be 0 at time of syscall
+      //  )
+      
+      // move status ptr into stack
       "mov qword ptr ss:[rsp+0x28], {0}",
+      // move buffer ptr into stack
       "mov qword ptr ss:[rsp+0x30], {1}",
+      // move buffer len into stack
       "mov qword ptr ss:[rsp+0x38], {2}",
 
+      // clear r8 register
       "mov r8, 0",
+      // required for ZwWriteFile on win10
       "mov r10, rcx",
+      // syscall index 
       "mov eax, 8",
       "syscall",
 
