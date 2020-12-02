@@ -17,6 +17,9 @@ panic = "abort"
 opt-level = "z"
 codegen-units = 1
 
+[dependencies]
+ntapi = "0.3"
+
 [dependencies.winapi]
 version = "0.3"
 features = [

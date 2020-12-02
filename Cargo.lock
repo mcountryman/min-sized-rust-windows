@@ -4,6 +4,16 @@
 name = "min-sized-rust-windows"
 version = "0.1.0"
 dependencies = [
+ "ntapi",
+ "winapi",
+]
+
+[[package]]
+name = "ntapi"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f6bb902e437b6d86e03cce10a7e2af662292c5dfef23b65899ea3ac9354ad44"
+dependencies = [
  "winapi",
 ]
 

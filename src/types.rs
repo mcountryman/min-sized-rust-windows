@@ -13,6 +13,7 @@ pub struct PEB {
   pub Mutant: HANDLE,
   pub ImageBaseAddress: PVOID,
   pub Ldr: *mut PEB_LDR_DATA,
+  pub ProcessParameters: *mut RTL_USER_PROCESS_PARAMETERS,
 }
 
 #[repr(C)]
@@ -37,4 +38,17 @@ pub struct PEB_LDR_DATA {
   pub SsHandle: HANDLE,
   pub InLoadOrderModuleList: LIST_ENTRY,
   // ...
+}
+
+#[repr(C)]
+pub struct RTL_USER_PROCESS_PARAMETERS {
+  pub MaximumLength: ULONG,
+  pub Length: ULONG,
+  pub Flags: ULONG,
+  pub DebugFlags: ULONG,
+  pub ConsoleHandle: HANDLE,
+  pub ConsoleFlags: ULONG,
+  pub StandardInput: HANDLE,
+  pub StandardOutput: HANDLE,
+  pub StandardError: HANDLE,
 }
