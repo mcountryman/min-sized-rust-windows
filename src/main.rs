@@ -1,7 +1,5 @@
 #![no_std]
 #![no_main]
-#![cfg_attr(not(debug_assertions), no_std)]
-#![cfg_attr(not(debug_assertions), no_main)]
 #![feature(asm)]
 #![feature(link_args)]
 #![feature(naked_functions)]
@@ -43,7 +41,7 @@ extern "C" fn mainCRTStartup() -> u32 {
       //    PLARGE_INTEGER   ByteOffset,    // rsp+0x40 - should be 0 at time of syscall
       //    PULONG           Key            // rsp+0x48 - should be 0 at time of syscall
       //  )
-      
+
       // move status ptr into stack
       "mov qword ptr ss:[rsp+0x28], {0}",
       // move buffer ptr into stack
@@ -55,7 +53,7 @@ extern "C" fn mainCRTStartup() -> u32 {
       "mov r8, 0",
       // required for ZwWriteFile on win10
       "mov r10, rcx",
-      // syscall index 
+      // syscall index
       "mov eax, 8",
       "syscall",
 
@@ -72,8 +70,6 @@ extern "C" fn mainCRTStartup() -> u32 {
     0
   }
 }
-
-fn main() {}
 
 /// Magic linker flags to merge sections and prevent linking _anything_
 #[allow(unused_attributes)]
