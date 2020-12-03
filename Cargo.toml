@@ -27,3 +27,19 @@ features = [
 
   "impl-debug"
 ]
+
+[build-dependencies]
+iced-x86 = "1.9"
+
+[build-dependencies.winapi]
+version = "0.3"
+features = [
+  "ntdef",
+  "winnt",
+  "dbghelp",
+  "minwindef",
+  "libloaderapi",
+
+  "impl-debug"
+]
+

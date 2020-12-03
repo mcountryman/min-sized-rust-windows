@@ -10,6 +10,10 @@ use crate::types::{IO_STATUS_BLOCK, PEB};
 
 mod types;
 
+#[cfg(not(all(target_env = "msvc", target_arch = "x86_64", target_os = "windows")))]
+compile_error!("Platform not supported!");
+include!(concat!(env!("OUT_DIR"), "/syscall.rs"));
+
 pub const BUF: &[u8] = b"Hello World!\n";
 
 #[no_mangle]
@@ -55,7 +59,7 @@ extern "C" fn mainCRTStartup() -> u32 {
       // required for ZwWriteFile on win10
       "mov r10, rcx",
       // syscall index
-      "mov eax, 8",
+      "mov eax, {3}",
       "syscall",
 
       // arg 5
@@ -64,6 +68,9 @@ extern "C" fn mainCRTStartup() -> u32 {
       in(reg) BUF.as_ptr(),
       // arg 7
       const BUF.len() as u32,
+
+      // syscall id
+      const NT_WRITE_FILE_SYSCALL_ID,
 
       // arg 1
       in("rcx") handle,
