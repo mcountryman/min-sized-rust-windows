@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
-use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, ULONG};
+use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, ULONG, NTSTATUS, PULONG};
 use winapi::um::winnt::{HANDLE, PVOID};
 
 #[repr(C)]
@@ -36,4 +36,16 @@ pub struct RTL_USER_PROCESS_PARAMETERS {
   pub StandardInput: HANDLE,
   pub StandardOutput: HANDLE,
   pub StandardError: HANDLE,
+}
+
+#[repr(C)]
+pub struct IO_STATUS_BLOCK {
+  _1: IO_STATUS_BLOCK_u,
+  _2: PULONG,
+}
+
+#[repr(C)]
+pub union IO_STATUS_BLOCK_u {
+  _1: NTSTATUS,
+  _2: PVOID,
 }
