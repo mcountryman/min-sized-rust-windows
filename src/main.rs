@@ -54,8 +54,8 @@ extern "C" fn mainCRTStartup() -> u32 {
       // move buffer len into stack
       "mov qword ptr ss:[rsp+0x38], {2}",
 
-      // clear r8 register
-      "mov r8, 0",
+      // clear r8 register (AKA mov r8, 0)
+      "xor r8, r8",
       // required for ZwWriteFile on win10
       "mov r10, rcx",
       // syscall index
