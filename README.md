@@ -52,3 +52,6 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 4. https://processhacker.sourceforge.io/doc/struct___r_t_l___u_s_e_r___p_r_o_c_e_s_s___p_a_r_a_m_e_t_e_r_s.html
 5. https://j00ru.vexillium.org/syscalls/nt/64/
 6. https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntwritefile
+
+### Credits
+@Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
