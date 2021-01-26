@@ -5,7 +5,7 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`760b` :sunglasses:
+`752b` :sunglasses:
 
 ```powershell
 ❯ cargo run --release
@@ -13,7 +13,7 @@ Hello World!
 
 ❯ cargo build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
     Finished release [optimized] target(s) in 0.02s
-760
+752
 ```
 
 ### Strategies
