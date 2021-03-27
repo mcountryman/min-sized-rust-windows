@@ -89,7 +89,7 @@ extern "C" fn mainCRTStartup() -> u32 {
 /// Magic linker flags to merge sections and prevent linking _anything_
 #[allow(unused_attributes)]
 #[cfg(target_env = "msvc")]
-#[link_args = "/ALIGN:8 /FILEALIGN:1 /MERGE:.rdata=.text /MERGE:.pdata=.text /NODEFAULTLIB /EMITPOGOPHASEINFO /DEBUG:NONE"]
+#[link_args = "/ALIGN:8 /FILEALIGN:1 /MERGE:.rdata=.text /MERGE:.pdata=.text /NODEFAULTLIB /EMITPOGOPHASEINFO /DEBUG:NONE /STUB:stub.exe"]
 extern "C" {}
 
 #[panic_handler]
