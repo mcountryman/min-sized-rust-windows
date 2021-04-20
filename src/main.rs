@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 #![feature(asm)]
-#![feature(link_args)]
 #![windows_subsystem = "console"]
 
 use core::panic::PanicInfo;
@@ -85,12 +84,6 @@ extern "C" fn mainCRTStartup() -> u32 {
     0
   }
 }
-
-/// Magic linker flags to merge sections and prevent linking _anything_
-#[allow(unused_attributes)]
-#[cfg(target_env = "msvc")]
-#[link_args = "/ALIGN:8 /FILEALIGN:1 /MERGE:.rdata=.text /MERGE:.pdata=.text /NODEFAULTLIB /EMITPOGOPHASEINFO /DEBUG:NONE /STUB:stub.exe"]
-extern "C" {}
 
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {

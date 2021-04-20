@@ -15,6 +15,22 @@ macro_rules! l {
 }
 
 fn main() {
+  // Magic linker flags to merge sections and prevent linking _anything_
+  let link_args = &[
+    "/ALIGN:8",
+    "/FILEALIGN:1",
+    "/MERGE:.rdata=.text",
+    "/MERGE:.pdata=.text",
+    "/NODEFAULTLIB",
+    "/EMITPOGOPHASEINFO",
+    "/DEBUG:NONE",
+    "/STUB:stub.exe",
+  ];
+
+  for arg in link_args {
+    println!("cargo:rustc-link-arg-bins={}", arg);
+  }
+
   unsafe {
     let id = get_syscall_id(l!("ntdll.dll"), l!("NtWriteFile"));
     match id {
