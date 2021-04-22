@@ -1,4 +1,6 @@
 # Minimum Binary Size Windows
+[![CI](https://github.com/mcountryman/min-sized-rust-windows/actions/workflows/ci.yml/badge.svg)](https://github.com/mcountryman/min-sized-rust-windows/actions/workflows/ci.yml)
+
 The smallest hello world I could get on win10 x64 in rust. This isn't something meant to 
 be used in production, more of a challenge.  I'm in no ways an expert and 
 [I have seen windows binaries get smaller on windows](https://github.com/pts/pts-tinype). [2]
