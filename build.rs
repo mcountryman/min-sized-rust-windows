@@ -7,13 +7,12 @@
 //!
 //! 2. Writes link.exe flags to optimize size.
 
-use std::slice::from_raw_parts;
-
 use iced_x86::{Code, Decoder, DecoderOptions, OpKind, Register};
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::slice::from_raw_parts;
 use winapi::um::libloaderapi::{GetProcAddress, LoadLibraryA};
 
 /// Converts string literal into a `LPCSTR`
