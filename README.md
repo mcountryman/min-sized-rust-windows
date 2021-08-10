@@ -7,15 +7,16 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`600b` :sunglasses:
+`560b` :sunglasses:
 
 ```powershell
 ❯ cargo run --release
 Hello World!
 
-❯ cargo build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
-    Finished release [optimized] target(s) in 0.02s
-600
+❯ cargo +nightly build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
+   Compiling min-sized-rust-windows v0.1.0 (**\min-sized-rust-windows)
+    Finished release [optimized] target(s) in 1.33s
+560
 ```
 
 ### Strategies
@@ -57,3 +58,4 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 
 ### Credits
 @Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
+@Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
