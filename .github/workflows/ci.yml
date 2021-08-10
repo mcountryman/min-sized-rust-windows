@@ -11,29 +11,47 @@ env:
 jobs:
   build:
     name: Build project
-    runs-on: windows-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2016]
     steps:
-      - name: Checkout code
+      - name: checkout
         uses: actions/checkout@v2
 
-      - name: Cargo cache
+      - name: cargo cache
         uses: actions/cache@v2
         with:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
 
-      - name: Setup nightly toolchain
+      - name: cargo toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
 
-      - name: Cargo build
+      - name: cargo build
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --verbose --release
 
-      - name: Get size of executable
+      - name: cargo test
+        run: |
+          $target = Get-Location
+          $job = Start-Job -ScriptBlock { 
+              param ($target)
+              & "${target}\target\release\min-sized-rust-windows.exe" 
+          } -ArgumentList $target
+
+          $state = Wait-Job $job -Timeout 10
+          $out = Receive-Job $job
+
+          if ($out -ne "Hello World!") {
+              $ex = "Output did not equal ``Hello World!``, got ``$out``."
+              Throw $ex
+          }
+
+      - name: get size
         run: (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
