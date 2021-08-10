@@ -16,28 +16,28 @@ jobs:
       matrix:
         os: [windows-2019, windows-2016]
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
 
-      - name: cargo cache
+      - name: Cache cargo
         uses: actions/cache@v2
         with:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
 
-      - name: cargo toolchain
+      - name: Setup cargo toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
 
-      - name: cargo build
+      - name: Build cargo
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --verbose --release
 
-      - name: cargo test
+      - name: Test execution
         run: |
           $target = Get-Location
           $job = Start-Job -ScriptBlock { 
@@ -49,9 +49,8 @@ jobs:
           $out = Receive-Job $job
 
           if ($out -ne "Hello World!") {
-              $ex = "Output did not equal ``Hello World!``, got ``$out``."
-              Throw $ex
+              Throw "Output did not equal ``Hello World!``, got ``$out``."
           }
 
-      - name: get size
+      - name: Get size
         run: (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
