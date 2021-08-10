@@ -1,3 +1,12 @@
+//! # The build script.
+//!
+//! Provides two functions.
+//!
+//! 1. Resolves syscall id of `NtWriteFile` of local system and creates a rust file at
+//! `$OUT_DIR/syscall.rs` containing a single constant `NT_WRITE_FILE_SYSCALL_ID`.
+//!
+//! 2. Writes link.exe flags to optimize size.
+
 use std::slice::from_raw_parts;
 
 use iced_x86::{Code, Decoder, DecoderOptions, OpKind, Register};
@@ -7,7 +16,7 @@ use std::io::Write;
 use std::path::Path;
 use winapi::um::libloaderapi::{GetProcAddress, LoadLibraryA};
 
-/// Helper macro for creating null terminated string pointers
+/// Converts string literal into a `LPCSTR`
 macro_rules! l {
   ($str: expr) => {
     concat!($str, "\0").as_ptr() as *const _
@@ -15,42 +24,37 @@ macro_rules! l {
 }
 
 fn main() {
-  // Magic linker flags to merge sections and prevent linking _anything_
-  let link_args = &[
-    "/ALIGN:8",
-    "/FILEALIGN:1",
-    "/MERGE:.rdata=.text",
-    "/MERGE:.pdata=.text",
-    "/NODEFAULTLIB",
-    "/EMITPOGOPHASEINFO",
-    "/DEBUG:NONE",
-    "/STUB:stub.exe",
-  ];
-
-  for arg in link_args {
-    println!("cargo:rustc-link-arg-bins={}", arg);
-  }
+  // File alignment flags to reduce size of `.text` section.
+  println!("cargo:rustc-link-arg-bins=/ALIGN:8");
+  println!("cargo:rustc-link-arg-bins=/FILEALIGN:1");
+  // Merges empty `.rdata` and `.pdata` into .text section saving a few bytes in data
+  // directories portion  of PE header.
+  println!("cargo:rustc-link-arg-bins=/MERGE:.rdata=.text");
+  println!("cargo:rustc-link-arg-bins=/MERGE:.pdata=.text");
+  // Prevents linking default C runtime libraries.
+  println!("cargo:rustc-link-arg-bins=/NODEFAULTLIB");
+  // Removes `IMAGE_DEBUG_DIRECTORY` from PE.
+  println!("cargo:rustc-link-arg-bins=/EMITPOGOPHASEINFO");
+  println!("cargo:rustc-link-arg-bins=/DEBUG:NONE");
+  // See: https://github.com/mcountryman/min-sized-rust-windows/pull/7
+  println!("cargo:rustc-link-arg-bins=/STUB:stub.exe");
 
   unsafe {
-    let id = get_syscall_id(l!("ntdll.dll"), l!("NtWriteFile"));
-    match id {
-      Some(id) => {
-        // Resolve `OUT_DIR`
-        let path = env::var("OUT_DIR") //
-          .expect("Missing environment variable 'OUT_DIR'");
-        
-        // Create file at `$OUT_DIR/syscall.rs`
-        let path = Path::new(&path).join("syscall.rs");
-        let mut f =
-          File::create(&path) //
-            .unwrap_or_else(|_| panic!("Failed to open file '{:?}'", path));
+    // First we find the syscall id of `NtWriteFile`.
+    let id = get_syscall_id(l!("ntdll.dll"), l!("NtWriteFile"))
+      .expect("syscall for ntdll.NtWriteFile not found");
 
-        // Write constant def `NT_WRITE_FILE_SYSCALL_ID`
-        writeln!(f, "pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id)
-          .unwrap_or_else(|_| panic!("Failed to write to file '{:?}'", path));
-      }
-      None => panic!("syscall for ntdll.NtWriteFile not found"),
-    };
+    // Get `OUT_DIR` path.
+    let path = env::var("OUT_DIR").expect("Missing environment variable 'OUT_DIR'");
+
+    // Create file at `$OUT_DIR/syscall.rs`
+    let path = Path::new(&path).join("syscall.rs");
+    let mut syscall =
+      File::create(&path).unwrap_or_else(|_| panic!("Failed to open file '{:?}'", path));
+
+    // Write constant def `NT_WRITE_FILE_SYSCALL_ID`
+    writeln!(syscall, "pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id)
+      .unwrap_or_else(|_| panic!("Failed to write to file '{:?}'", path));
   }
 }
 
@@ -81,7 +85,7 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
       };
     }
 
-    // Syscall found, return last known eax mov'd operand and 
+    // Syscall found, return last known eax mov'd operand and
     // hope for the best.
     if instr.code() == Code::Syscall {
       return id;
