@@ -10,7 +10,7 @@ If you can go smaller let me know how you did it :grin:
 `560b` :sunglasses:
 
 ```powershell
-❯ cargo run --release
+❯ cargo +nightly run --release
 Hello World!
 
 ❯ cargo +nightly build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
@@ -25,19 +25,28 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * [`no_std`](https://github.com/johnthagen/min-sized-rust#removing-libstd-with-no_std)
 * [`no_main`](https://github.com/johnthagen/min-sized-rust#remove-corefmt-with-no_main-and-careful-usage-of-libstd)
 * Merge `.rdata` and `.pdata` sections into `.text` section linker flag. [1]
-    * Using the LINK.exe [`/MERGE`](https://docs.microsoft.com/en-us/cpp/build/reference/merge-combine-sections?view=msvc-160)     
-      flag found at the bottom of `main.rs`.
-    * Section definitions add more junk to the final output, and I _believe_ they have a 
-      min-size.  For this example we really don't care about readonly data (`.rdata`) or 
-      exception handlers (`.pdata`) so we "merge" these empty sections into the `.text` 
-      sections.
+  * Using the LINK.exe [`/MERGE`](https://docs.microsoft.com/en-us/cpp/build/reference/merge-combine-sections?view=msvc-160)     
+    flag found at the bottom of `main.rs`.
+  * Section definitions add more junk to the final output, and I _believe_ they have a 
+    min-size.  For this example we really don't care about readonly data (`.rdata`) or 
+    exception handlers (`.pdata`) so we "merge" these empty sections into the `.text` 
+    sections.
 * No imports.
-    * To avoid having an extra `.idata` section (more bytes and cannot be merged into 
-      `.text` section using `LINK.exe`) we do the following.
-      * Resolve stdout handle from `PEB`'s process parameters (thanks ChrisSD). [3][4]
-      * Invoke `NtWriteFile`/`ZwWriteFile` using syscall `0x80`. [5][6]
-        1. This is undocumented behaviour in windows, syscalls change overtime. [5]
-        2. This will only work on windows 10, and was only tested on 10.0.19041 Build 19041.
+  * To avoid having an extra `.idata` section (more bytes and cannot be merged into 
+    `.text` section using `LINK.exe`) we do the following.
+  * Resolve stdout handle from `PEB`'s process parameters (thanks ChrisSD). [3][4]
+  * Invoke `NtWriteFile`/`ZwWriteFile` using syscall `0x80`. [5][6]
+    1. This is undocumented behaviour in windows, syscalls change over time. [5]
+    2. I can't guarantee this will work on your edition of windows.. it's tested on
+       my local machine (W10) and on GH actions (windows-2019 and windows-2016) server
+       editions.
+* Custom `LINK.exe` stub.
+  * A custom built stub created to remove `Rich PE` header. More information can be found [here](https://bytepointer.com/articles/the_microsoft_rich_header.htm).
+  * Credits to @Frago9876543210 for finding, and implementing this.
+* Drop debug info in pe header.
+  * Add `/EMITPOGOPHASEINFO /DEBUG:NONE` flags.
+  * Credits to @Frago9876543210 for finding, and implementing this.
+
     
 ### Future
 * Using strategies shown in [[2]](https://github.com/pts/pts-tinype) we _could_ post process
@@ -57,5 +66,5 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 6. https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntwritefile
 
 ### Credits
-@Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
-@Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
+* @Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
+* @Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
