@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(asm)]
+#![feature(asm_const)]
 #![windows_subsystem = "console"]
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
