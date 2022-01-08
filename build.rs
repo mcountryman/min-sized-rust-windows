@@ -10,7 +10,6 @@
 use iced_x86::{Code, Mnemonic, Decoder, DecoderOptions, OpKind, Register};
 use std::env;
 
-use std::io::Write;
 use std::path::Path;
 use std::slice::from_raw_parts;
 use winapi::um::libloaderapi::{GetProcAddress, LoadLibraryA};
