@@ -7,9 +7,9 @@
 //!
 //! 2. Writes link.exe flags to optimize size.
 
-use iced_x86::{Code, Decoder, DecoderOptions, OpKind, Register};
+use iced_x86::{Code, Mnemonic, Decoder, DecoderOptions, OpKind, Register};
 use std::env;
-use std::fs::File;
+
 use std::io::Write;
 use std::path::Path;
 use std::slice::from_raw_parts;
@@ -17,7 +17,7 @@ use winapi::um::libloaderapi::{GetProcAddress, LoadLibraryA};
 
 /// Converts string literal into a `LPCSTR`
 macro_rules! l {
-  ($str: expr) => {
+  ($str:literal) => {
     concat!($str, "\0").as_ptr() as *const _
   };
 }
@@ -48,11 +48,7 @@ fn main() {
 
     // Create file at `$OUT_DIR/syscall.rs`
     let path = Path::new(&path).join("syscall.rs");
-    let mut syscall =
-      File::create(&path).unwrap_or_else(|_| panic!("Failed to open file '{:?}'", path));
-
-    // Write constant def `NT_WRITE_FILE_SYSCALL_ID`
-    writeln!(syscall, "pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id)
+    std::fs::write(&path, format!("pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id))
       .unwrap_or_else(|_| panic!("Failed to write to file '{:?}'", path));
   }
 }
@@ -63,12 +59,13 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
   // Load the procedure and pull out the first 50b
   let library = LoadLibraryA(library);
   let addr = GetProcAddress(library, name);
-  let addr = addr as *const u8;
-  let addr = from_raw_parts(addr, 50);
+  return Some(*addr.cast::<u32>().add(1));
+  
+  let bytes = from_raw_parts(addr as *const u8, 50);
 
   let mut id = None;
   // Init decoder with hardcoded x64 arch
-  let mut decoder = Decoder::new(64, addr, DecoderOptions::NONE);
+  let mut decoder = Decoder::new(64, bytes, DecoderOptions::NONE);
 
   // Iterate over instructions
   while decoder.can_decode() {
@@ -84,9 +81,9 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
       };
     }
 
-    // Syscall found, return last known eax mov'd operand and
+    // Syscall or end of func found, return last known eax mov'd operand and
     // hope for the best.
-    if instr.code() == Code::Syscall {
+    if instr.code() == Code::Syscall || instr.mnemonic() == Mnemonic::Ret{
       return id;
     }
   }
