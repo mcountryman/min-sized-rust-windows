@@ -59,8 +59,6 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
   // Load the procedure and pull out the first 50b
   let library = LoadLibraryA(library);
   let addr = GetProcAddress(library, name);
-  return Some(*addr.cast::<u32>().add(1));
-  
   let bytes = from_raw_parts(addr as *const u8, 50);
 
   let mut id = None;

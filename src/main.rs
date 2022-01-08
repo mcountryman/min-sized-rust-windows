@@ -1,12 +1,13 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
 #![feature(asm_const)]
 #![windows_subsystem = "console"]
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
 use core::panic::PanicInfo;
+use core::arch::asm;
+use core::mem::MaybeUninit;
 use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, NTSTATUS, PULONG, ULONG};
 use winapi::um::winnt::{HANDLE, PVOID};
 
@@ -22,14 +23,14 @@ pub const BUF: &[u8] = b"Hello World!\n";
 
 #[no_mangle]
 extern "C" fn mainCRTStartup() -> u32 {
+  let peb: *mut PEB;
+  let mut status: MaybeUninit<IO_STATUS_BLOCK> = MaybeUninit::uninit();
   unsafe {
-    let peb: *mut PEB;
-    let mut status: IO_STATUS_BLOCK = core::mem::zeroed();
-
     // Get PEB from reserved register `GS`
     asm!(
       "mov {}, gs:[0x60]",
       out(reg) peb,
+      options(pure, nomem, nostack)
     );
 
     // Get STDOUT handle from PEB
