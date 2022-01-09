@@ -5,9 +5,9 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
-use core::panic::PanicInfo;
 use core::arch::asm;
 use core::mem::MaybeUninit;
+use core::panic::PanicInfo;
 use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, NTSTATUS, PULONG, ULONG};
 use winapi::um::winnt::{HANDLE, PVOID};
 

@@ -7,7 +7,7 @@
 //!
 //! 2. Writes link.exe flags to optimize size.
 
-use iced_x86::{Code, Mnemonic, Decoder, DecoderOptions, OpKind, Register};
+use iced_x86::{Code, Decoder, DecoderOptions, Mnemonic, OpKind, Register};
 use std::env;
 
 use std::path::Path;
@@ -47,8 +47,11 @@ fn main() {
 
     // Create file at `$OUT_DIR/syscall.rs`
     let path = Path::new(&path).join("syscall.rs");
-    std::fs::write(&path, format!("pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id))
-      .unwrap_or_else(|_| panic!("Failed to write to file '{:?}'", path));
+    std::fs::write(
+      &path,
+      format!("pub const NT_WRITE_FILE_SYSCALL_ID: u32 = {};", id),
+    )
+    .unwrap_or_else(|_| panic!("Failed to write to file '{:?}'", path));
   }
 }
 
@@ -80,7 +83,7 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
 
     // Syscall or end of func found, return last known eax mov'd operand and
     // hope for the best.
-    if instr.code() == Code::Syscall || instr.mnemonic() == Mnemonic::Ret{
+    if instr.code() == Code::Syscall || instr.mnemonic() == Mnemonic::Ret {
       return id;
     }
   }
