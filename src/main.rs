@@ -1,11 +1,12 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
 #![feature(asm_const)]
 #![windows_subsystem = "console"]
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
+use core::arch::asm;
+use core::mem::MaybeUninit;
 use core::panic::PanicInfo;
 use winapi::shared::ntdef::{BOOLEAN, LIST_ENTRY, NTSTATUS, PULONG, ULONG};
 use winapi::um::winnt::{HANDLE, PVOID};
@@ -22,14 +23,14 @@ pub const BUF: &[u8] = b"Hello World!\n";
 
 #[no_mangle]
 extern "C" fn mainCRTStartup() -> u32 {
+  let peb: *mut PEB;
+  let mut status: MaybeUninit<IO_STATUS_BLOCK> = MaybeUninit::uninit();
   unsafe {
-    let peb: *mut PEB;
-    let mut status: IO_STATUS_BLOCK = core::mem::zeroed();
-
     // Get PEB from reserved register `GS`
     asm!(
       "mov {}, gs:[0x60]",
       out(reg) peb,
+      options(pure, nomem, nostack)
     );
 
     // Get STDOUT handle from PEB
@@ -52,18 +53,12 @@ extern "C" fn mainCRTStartup() -> u32 {
       //
 
       // move status ptr into stack
-      "mov qword ptr ss:[rsp+0x28], {0}",
+      "mov qword ptr [rsp+0x28], {0}",
       // move buffer ptr into stack
-      "mov qword ptr ss:[rsp+0x30], {1}",
+      "mov qword ptr [rsp+0x30], {1}",
       // move buffer len into stack
-      "mov qword ptr ss:[rsp+0x38], {2}",
+      "mov dword ptr [rsp+0x38], {2}",
 
-      // clear r8 register (AKA mov r8, 0)
-      "xor r8, r8",
-      // required for ZwWriteFile on win10
-      "mov r10, rcx",
-      // syscall index
-      "mov eax, {3}",
       "syscall",
 
       // arg 5
@@ -74,16 +69,14 @@ extern "C" fn mainCRTStartup() -> u32 {
       const BUF.len() as u32,
 
       // syscall id
-      const NT_WRITE_FILE_SYSCALL_ID,
+      in("eax") NT_WRITE_FILE_SYSCALL_ID,
 
       // arg 1
-      in("rcx") handle,
+      //in("rcx") handle,
+      // on windows 10 the kernel reads from r10 not rcx
+      in("r10") handle,
       // arg 2
       in("rdx") 0,
-      // arg 3
-      in("r8") 0,
-      // arg 4
-      in("r9") 0,
     );
 
     0
