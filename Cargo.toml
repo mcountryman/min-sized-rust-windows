@@ -1,5 +1,3 @@
-cargo-features = ["strip"]
-
 [package]
 name = "min-sized-rust-windows"
 version = "0.1.0"
