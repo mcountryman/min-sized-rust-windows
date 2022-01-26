@@ -7,7 +7,7 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`560b` :sunglasses:
+`536b` :sunglasses:
 
 ```powershell
 ❯ cargo +nightly run --release
@@ -68,3 +68,4 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 ### Credits
 * @Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
 * @Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
+* @ironhaven - Brought binary size from `560b` -> `536b` 😁
