@@ -20,7 +20,7 @@ version = "0.3"
 features = ["ntdef", "winnt", "dbghelp", "minwindef", "impl-debug"]
 
 [build-dependencies]
-iced-x86 = { version = "1.9", default-features = false, features = ["std", "decoder"] }
+iced-x86 = { version = "1.11", default-features = false, features = ["std", "decoder"] }
 
 [build-dependencies.winapi]
 version = "0.3"
