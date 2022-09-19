@@ -74,7 +74,7 @@ unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
     // Find instruction that mov's syscall id into eax register
     // `mov eax, ?`
     if instr.op0_register() == Register::EAX {
-      id = if instr.op_kind(1) == OpKind::Immediate32 {
+      id = if let Some(OpKind::Immediate32) = instr.try_op_kind(1).ok() {
         Some(instr.immediate32())
       } else {
         None
