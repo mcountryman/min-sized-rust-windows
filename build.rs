@@ -10,9 +10,14 @@
 use iced_x86::{Code, Decoder, DecoderOptions, Mnemonic, OpKind, Register};
 use std::env;
 
+use core::ffi::{c_char, c_void};
 use std::path::Path;
 use std::slice::from_raw_parts;
-use winapi::um::libloaderapi::{GetProcAddress, LoadLibraryA};
+
+extern "system" {
+  pub fn GetProcAddress(hModule: *mut c_void, lpProcName: *const c_char) -> *mut c_void;
+  pub fn LoadLibraryA(lpFileName: *const c_char) -> *mut c_void;
+}
 
 /// Converts string literal into a `LPCSTR`
 macro_rules! l {
