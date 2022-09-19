@@ -96,7 +96,7 @@ extern "C" fn mainCRTStartup() {
       //arg 9, [rsp + 0x48], not necessary
       //"mov qword ptr [rsp + 0x48], 0",
 
-      //rax = NT_WRITE_FILE_SYSCALL_ID
+      //eax = NT_WRITE_FILE_SYSCALL_ID
       "push {0}",
       "pop rax",
 
