@@ -15,6 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022, windows-2019]
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
