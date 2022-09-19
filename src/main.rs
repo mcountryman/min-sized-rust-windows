@@ -47,6 +47,8 @@ extern "C" fn mainCRTStartup() {
       "sub rsp, 80",
 
       //arg 1, r10 = NtCurrentTeb()->ProcessParameters->hStdOutput
+      //most useful structs is described in wine source code
+      //see: https://github.com/wine-mirror/wine/blob/master/include/winternl.h
       //r10 = 0x60 (offset to PEB)
       "push 0x60",
       "pop r10",
