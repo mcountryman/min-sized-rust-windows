@@ -42,7 +42,7 @@ extern "C" fn mainCRTStartup() {
       //allocate memory
       //stack size = 80 (see https://github.com/JustasMasiulis/inline_syscall/blob/master/include/in_memory_init.inc)
       //If I understand correctly, then the stack size is calculated like this:
-      //1. NtWriteFile has 9 args, 9 * 8 = 72 bytes
+      //1. NtWriteFile has 9 args, 9 * 8 = 72 bytes (first 32 bytes is shadow space)
       //2. +8 bytes for stack alignment by 16
       "sub rsp, 80",
 
