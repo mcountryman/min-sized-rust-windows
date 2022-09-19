@@ -7,7 +7,7 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`496b` :sunglasses:
+`464b` :sunglasses:
 
 ```powershell
 ❯ cargo +nightly install anonlink
@@ -18,7 +18,7 @@ Hello World!
 ❯ cargo +nightly build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
    Compiling min-sized-rust-windows v0.1.0 (**\min-sized-rust-windows)
     Finished release [optimized] target(s) in 1.33s
-496
+464
 ```
 
 ### Strategies
