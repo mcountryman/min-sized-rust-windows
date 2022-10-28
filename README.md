@@ -7,16 +7,18 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`536b` :sunglasses:
+`464b` :sunglasses:
 
 ```powershell
+❯ cargo +nightly install anonlink
+❯ anonlink
 ❯ cargo +nightly run --release
 Hello World!
 
 ❯ cargo +nightly build --release && (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
    Compiling min-sized-rust-windows v0.1.0 (**\min-sized-rust-windows)
     Finished release [optimized] target(s) in 1.33s
-560
+464
 ```
 
 ### Strategies
@@ -38,7 +40,7 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
   * Invoke `NtWriteFile`/`ZwWriteFile` using syscall `0x80`. [5][6]
     1. This is undocumented behaviour in windows, syscalls change over time. [5]
     2. I can't guarantee this will work on your edition of windows.. it's tested on
-       my local machine (W10) and on GH actions (windows-2019 and windows-2016) server
+       my local machine (W10) and on GH actions (windows-2022 and windows-2019) server
        editions.
 * Custom `LINK.exe` stub.
   * A custom built stub created to remove `Rich PE` header. More information can be found [here](https://bytepointer.com/articles/the_microsoft_rich_header.htm).
@@ -69,3 +71,4 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * @Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
 * @Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
 * @ironhaven - Brought binary size from `560b` -> `536b` 😁
+* @StackOverflowExcept1on - Brought binary size from `536b` -> `464b` 😁
