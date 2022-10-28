@@ -71,3 +71,4 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * @Frago9876543210 - Brought binary size from `760b` -> `600b` :grin:
 * @Frago9876543210 - Brought binary size from `600b` -> `560b` :grin:
 * @ironhaven - Brought binary size from `560b` -> `536b` 😁
+* @StackOverflowExcept1on - Brought binary size from `536b` -> `464b` 😁
