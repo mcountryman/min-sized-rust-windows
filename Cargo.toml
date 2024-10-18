@@ -16,4 +16,4 @@ opt-level = "z"
 codegen-units = 1
 
 [build-dependencies]
-iced-x86 = { version = "1.17", default-features = false, features = ["std", "decoder"] }
+iced-x86 = { version = "1.21", default-features = false, features = ["std", "decoder"] }

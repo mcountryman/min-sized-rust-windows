@@ -1,6 +1,5 @@
 #![no_std]
 #![no_main]
-#![feature(asm_const)]
 #![windows_subsystem = "console"]
 
 use core::arch::asm;
@@ -15,7 +14,7 @@ include!(concat!(env!("OUT_DIR"), "/syscall.rs"));
 
 macro_rules! buf {
   () => {
-    "Hello World!\n"
+    "Hello World!"
   };
 }
 
@@ -80,12 +79,14 @@ extern "C" fn mainCRTStartup() {
 
       //arg 6, [rsp + 0x30]
       //this is dirty hack to save bytes and push string to register rax
-      //call instruction will push address of hello world string to the stack and jumps to label 1
+      //call instruction will push address of hello world string to the stack and jumps to label 2
       //so, we can store address of string using pop instruction
-      //label "1", f - forward (see https://doc.rust-lang.org/nightly/rust-by-example/unsafe/asm.html#labels)
-      "call 1f",
+      //label "2", f - forward (see https://doc.rust-lang.org/nightly/rust-by-example/unsafe/asm.html#labels)
+      "call 2f",
       concat!(".ascii \"", buf!(), "\""),
-      "1: pop rax",
+      //new line
+      ".byte 0x0a",
+      "2: pop rax",
       "mov [rsp + 0x30], rax",
 
       //arg 7, [rsp + 0x38]

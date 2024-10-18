@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
+    branches: [ master ]
   pull_request:
+    branches: [ master ]
   workflow_dispatch:
 
 env:
@@ -12,37 +14,42 @@ jobs:
   build:
     name: Build project
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
-        os: [windows-2022, windows-2019]
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+        os:
+          - windows-2022
+          - windows-2019
+        toolchain:
+          - stable
+          - nightly
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Cache cargo
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
+      - name: Cargo cache
+        uses: Swatinem/rust-cache@v2
 
-      - name: Setup cargo toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Setup ${{ matrix.toolchain }} toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly
-          override: true
+          toolchain: ${{ matrix.toolchain }}
+          components: clippy, rustfmt
 
       - name: Patch MSVC linker
         run: |
           cargo install anonlink
           anonlink
 
-      - name: Build cargo
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose --release
+      - name: Cargo build
+        run: cargo build --release
+
+      - name: Cargo clippy
+        run: cargo clippy --release -- -D warnings
+
+      - name: Cargo fmt
+        run: cargo fmt -- --check
 
       - name: Test execution
         run: |
