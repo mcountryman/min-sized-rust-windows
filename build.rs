@@ -3,7 +3,7 @@
 //! Provides two functions.
 //!
 //! 1. Resolves syscall id of `NtWriteFile` of local system and creates a rust file at
-//! `$OUT_DIR/syscall.rs` containing a single constant `NT_WRITE_FILE_SYSCALL_ID`.
+//!    `$OUT_DIR/syscall.rs` containing a single constant `NT_WRITE_FILE_SYSCALL_ID`.
 //!
 //! 2. Writes link.exe flags to optimize size.
 
