@@ -38,6 +38,8 @@ fn main() {
   println!("cargo:rustc-link-arg-bins=/NODEFAULTLIB");
   // Removes `IMAGE_DEBUG_DIRECTORY` from PE.
   println!("cargo:rustc-link-arg-bins=/EMITPOGOPHASEINFO");
+  // Removes "Rich PE" header.
+  println!("cargo:rustc-link-arg-bins=/EMITTOOLVERSIONINFO:NO");
   println!("cargo:rustc-link-arg-bins=/DEBUG:NONE");
   // See: https://github.com/mcountryman/min-sized-rust-windows/pull/7
   println!("cargo:rustc-link-arg-bins=/STUB:stub.exe");
