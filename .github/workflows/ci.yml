@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         os:
+          - windows-2025
           - windows-2022
           - windows-2019
         toolchain:
@@ -36,11 +37,6 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy, rustfmt
-
-      - name: Patch MSVC linker
-        run: |
-          cargo install anonlink
-          anonlink
 
       - name: Cargo build
         run: cargo build --release
