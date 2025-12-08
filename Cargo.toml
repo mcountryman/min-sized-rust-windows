@@ -1,8 +1,7 @@
 [package]
 name = "min-sized-rust-windows"
 version = "0.1.0"
-authors = ["Marvin Countryman <marvinc@siqinc.com>"]
-edition = "2021"
+edition = "2024"
 
 [profile.dev]
 panic = "abort"

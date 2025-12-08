@@ -19,7 +19,7 @@ macro_rules! buf {
 }
 
 // Actually this function returns u32 (xor eax, eax; ret)
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn mainCRTStartup() {
   unsafe {
     asm!(
