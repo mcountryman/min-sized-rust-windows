@@ -14,7 +14,7 @@ use core::ffi::{c_char, c_void};
 use std::path::Path;
 use std::slice::from_raw_parts;
 
-extern "system" {
+unsafe extern "system" {
   pub fn GetProcAddress(hModule: *mut c_void, lpProcName: *const c_char) -> *mut c_void;
   pub fn LoadLibraryA(lpFileName: *const c_char) -> *mut c_void;
 }
@@ -66,9 +66,9 @@ fn main() {
 /// iterating over instructions until a syscall opcode is found.
 unsafe fn get_syscall_id(library: *const i8, name: *const i8) -> Option<u32> {
   // Load the procedure and pull out the first 50b
-  let library = LoadLibraryA(library);
-  let addr = GetProcAddress(library, name);
-  let bytes = from_raw_parts(addr as *const u8, 50);
+  let library = unsafe { LoadLibraryA(library) };
+  let addr = unsafe { GetProcAddress(library, name) };
+  let bytes = unsafe { from_raw_parts(addr as *const u8, 50) };
 
   let mut id = None;
   // Init decoder with hardcoded x64 arch
