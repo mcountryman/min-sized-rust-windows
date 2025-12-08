@@ -28,7 +28,7 @@ macro_rules! l {
 
 fn main() {
   // File alignment flags to reduce size of `.text` section.
-  println!("cargo:rustc-link-arg-bins=/ALIGN:8");
+  println!("cargo:rustc-link-arg-bins=/ALIGN:4");
   println!("cargo:rustc-link-arg-bins=/FILEALIGN:1");
   // Merges empty `.rdata` and `.pdata` into .text section saving a few bytes in data
   // directories portion  of PE header.

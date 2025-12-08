@@ -37,17 +37,7 @@ unsafe extern "C" fn mainCRTStartup() -> u32 {
     //    9 | PULONG           | Key           | rsp+0x48 | should be 0 at time of syscall
     //
 
-    //allocate memory
-    //stack size = 80 (see https://github.com/JustasMasiulis/inline_syscall/blob/master/include/inline_syscall.inl)
-    //If I understand correctly, then the stack size is calculated like this:
-    //1. 8 bytes for "pseudo ret address"
-    //2. NtWriteFile has 9 args, 9 * 8 = 72 bytes (first 32 bytes is shadow space)
-    //3. stack alignment by 16, in our case is nothing to align
-    "sub rsp, 80",
-
     //arg 1, r10 = NtCurrentTeb()->ProcessParameters->hStdOutput
-    //most useful structs is described in wine source code
-    //see: https://github.com/wine-mirror/wine/blob/master/include/winternl.h
     //r10 = 0x60 (offset to PEB)
     "push 0x60",
     "pop r10",
@@ -62,40 +52,39 @@ unsafe extern "C" fn mainCRTStartup() -> u32 {
     //arg 2, rdx = 0
     "xor edx, edx",
 
-    //arg 3, r8 = 0, not necessary
-    //"xor r8, r8",
+    //arg 3, r8 = 0, unused (OS loader sets this to 0)
+    // "xor r8, r8"
 
-    //arg 4, r9 = 0, not necessary
-    //"xor r9, r9",
+    //arg 4, r9 = 0, unused (OS loader sets this to 0)
+    // "xor r9, r9",
 
-    //arg 5, [rsp + 0x28]
-    //this is not quite correct, but we will just overwrite the memory location
-    //called "stack shadow space"
-    //see: https://stackoverflow.com/questions/30190132/what-is-the-shadow-space-in-x64-assembly
-    //memory from rsp to [rsp + sizeof(IO_STATUS_BLOCK)] will be overwritten after syscall
-    //sizeof(IO_STATUS_BLOCK) = 16 bytes
-    "mov [rsp + 0x28], rsp",
+    //arg 9, [rsp + 0x48] = 0
+    "push rdx",
 
-    //arg 6, [rsp + 0x30]
-    //this is dirty hack to save bytes and push string to register rax
-    //call instruction will push address of hello world string to the stack and jumps to label 2
-    //so, we can store address of string using pop instruction
-    //label "2", f - forward (see https://doc.rust-lang.org/nightly/rust-by-example/unsafe/asm.html#labels)
+    //arg 8, [rsp + 0x40] = 0
+    //This and Arg 9 will serve as IoStatusBlock
+    "push rdx",
+
+    //arg 7, [rsp + 0x38] = Length
+    "push {1}",
+
+    //arg 6, [rsp + 0x30] = Buffer
     "call 2f",
     concat!(".ascii \"", buf!(), "\""),
     //new line
     ".byte 0x0a",
-    "2: pop rax",
-    "mov [rsp + 0x30], rax",
+    "2:",
 
-    //arg 7, [rsp + 0x38]
-    "mov dword ptr [rsp + 0x38], {1}",
+    //arg 5, [rsp + 0x28] = IoStatusBlock
+    //Overlap Arg 5 (IoStatusBlock pointer) to point to Arg 6 (Buffer Ptr)
+    //This overwrites the Buffer Ptr and Length arguments on completion, but saves bytes.
+    "push rsp",
 
-    //arg 8, [rsp + 0x40], not necessary
-    //"mov qword ptr [rsp + 0x40], 0",
+    //Allocate shadow space (32 bytes) + alignment padding (8 bytes)
+    "sub rsp, 40",
 
-    //arg 9, [rsp + 0x48], not necessary
-    //"mov qword ptr [rsp + 0x48], 0",
+    //shadow space (32 bytes) + alignment (8 bytes)
+    //already allocated
 
     //eax = NT_WRITE_FILE_SYSCALL_ID
     "push {0}",
@@ -104,10 +93,10 @@ unsafe extern "C" fn mainCRTStartup() -> u32 {
     //make syscall
     "syscall",
 
-    //eax = 0 (exit code)
-    "xor eax, eax",
+    //eax = NtWriteFile return code (STATUS_SUCCESS = 0)
+    // "xor eax, eax",
 
-    //deallocate memory
+    //deallocate memory (5 args * 8 + 40 shadow = 80 bytes)
     "add rsp, 80",
     "ret",
     const NT_WRITE_FILE_SYSCALL_ID,
