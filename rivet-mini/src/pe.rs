@@ -1,3 +1,9 @@
+//! Windows PE (Portable Executable) structures used for parsing and
+//! manipulating PE files in `rivet-mini`.
+//!
+//! These definitions are intentionally `#[repr(C, packed)]` so they map to
+//! the on-disk layout of PE headers. They are used when reading and writing
+//! header fields from byte buffers.
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone)]
 pub struct ImageDosHeader {
@@ -92,3 +98,18 @@ pub struct ImageDataDirectory {
 
 pub const IMAGE_DOS_SIGNATURE: u16 = 0x5A4D; // MZ
 pub const IMAGE_NT_SIGNATURE: u32 = 0x00004550; // PE\0\0
+
+/// Minimum common Windows PE size this packer pads to (bytes).
+///
+/// Historically some extremely small PE stubs land around 268 bytes on
+/// Windows; this constant documents that choice and centralizes the value.
+pub const MIN_WINDOWS_PE_SIZE: usize = 268;
+
+/// The canonical number of data directories in the PE Optional Header.
+/// Most PE files use 16 directories (IMAGE_DIRECTORY_ENTRY_* entries).
+#[allow(dead_code)]
+pub const IMAGE_NUMBEROF_DIRECTORY_ENTRIES: usize = 16;
+
+/// Optional header magic for PE32+ (64-bit) images.
+#[allow(dead_code)]
+pub const IMAGE_NT_OPTIONAL_HDR64_MAGIC: u16 = 0x20b;

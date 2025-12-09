@@ -5,6 +5,30 @@ use std::process::Command;
 use std::ptr;
 use std::slice;
 
+/// Packs a PE (Portable Executable) file by building the `msrw-unpacked` binary,
+/// reading its output, validating and parsing its headers, and performing transformations.
+///
+/// # Purpose
+/// This function automates the process of packing a PE file. It first builds the
+/// `msrw-unpacked` binary, reads the resulting PE file from disk.
+///
+/// # Packing Strategy
+/// - Build the unpacked binary using Cargo.
+/// - Read the resulting PE file from disk.
+/// - Validate the DOS and PE headers to ensure the file is a valid PE executable.
+/// - Overlap the PE header with the DOS header.
+/// - Create a new section table in the gap.
+/// - Write the packed output to a new file.
+///
+/// # Assumptions
+/// - The input file is a valid PE executable produced by the build step.
+/// - The file is large enough to contain the required headers.
+///
+/// # Failure Cases
+/// - Build failures (e.g., compilation errors).
+/// - File read errors (e.g., missing or inaccessible input file).
+/// - Invalid DOS or PE signatures.
+/// - Invalid header offsets or file sizes.
 fn main() -> Result<(), Box<dyn std::error::Error>> {
   // Build the project first
   let status = Command::new("cargo")
@@ -16,7 +40,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   }
 
   let input_path = "./target/release/msrw-unpacked.exe";
+  // Validate input_path is a regular file and not a symlink
+  if !fs::exists(input_path)? {
+    return Err(format!("Input file does not exist: {}", input_path).into());
+  }
+  let input_meta = fs::symlink_metadata(input_path)?;
+  if !input_meta.is_file() || input_meta.file_type().is_symlink() {
+    return Err(
+      format!(
+        "Input path '{}' is not a regular file or is a symlink",
+        input_path
+      )
+      .into(),
+    );
+  }
+
   let output_path = "./target/release/msrw.exe";
+  // Validate output_path if it exists
+  if let Ok(output_meta) = fs::symlink_metadata(output_path)
+    && (!output_meta.is_file() || output_meta.file_type().is_symlink())
+  {
+    return Err(
+      format!(
+        "Output path '{}' exists and is not a regular file or is a symlink",
+        output_path
+      )
+      .into(),
+    );
+  }
 
   // println!("Reading inputs from {}", input_path);
   let buffer = fs::read(input_path)?;
@@ -60,6 +111,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   let _image_base = opt_header.image_base;
   let section_alignment = opt_header.section_alignment;
   let file_alignment = opt_header.file_alignment;
+  if file_alignment == 0 {
+    return Err("Invalid file alignment (0)".into());
+  }
+
   let original_entry_point = opt_header.address_of_entry_point;
   let original_base_of_code = opt_header.base_of_code;
   // println!("Original EntryPoint: 0x{:x}", original_entry_point);
@@ -258,8 +313,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut raw_size =
       unsafe { ptr::read_unaligned(ptr::addr_of!(section.size_of_raw_data)) } as usize;
 
-    // If last section (by order in file or index?), append overlay
-    // Usually last index is last in file.
+    // If last section, append overlay
     if i == sections.len() - 1 && overlay_size > 0 {
       raw_size += overlay_size;
       // println!(
@@ -334,10 +388,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       }
     }
 
-    if raw_size > 0 {
-      let start = original_raw_ptr;
-      let _end = start + raw_size;
-    }
     if file_alignment > 0 {
       let rem = current_data_offset % file_alignment as usize;
       if rem != 0 {
@@ -514,7 +564,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   // Write output
   // Pad to minimum Windows PE size (often 268 bytes) if needed
-  while out_buffer.len() < 268 {
+  while out_buffer.len() < pe::MIN_WINDOWS_PE_SIZE {
     out_buffer.push(0);
   }
   // println!("Final size with padding: {}", out_buffer.len());
