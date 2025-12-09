@@ -1,0 +1,10 @@
+[package]
+name = "rivet-mini"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "packer"
+path = "src/main.rs"
+
+[dependencies]

@@ -38,21 +38,21 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           components: clippy, rustfmt
 
-      - name: Cargo build
-        run: cargo build --release
+      - name: Cargo pack
+        run: cargo pack
 
       - name: Cargo clippy
-        run: cargo clippy --release -- -D warnings
+        run: cargo clippy --workspace --release -- -D warnings
 
       - name: Cargo fmt
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
 
       - name: Test execution
         run: |
           $target = Get-Location
           $job = Start-Job -ScriptBlock { 
               param ($target)
-              & "${target}\target\release\min-sized-rust-windows.exe" 
+              & "${target}\target\release\msrw.exe" 
           } -ArgumentList $target
 
           $state = Wait-Job $job -Timeout 10
@@ -63,4 +63,4 @@ jobs:
           }
 
       - name: Get size
-        run: (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
+        run: (Get-Item ".\target\release\msrw.exe").Length

@@ -1,0 +1,2 @@
+[alias]
+pack = "run -p rivet-mini --release"

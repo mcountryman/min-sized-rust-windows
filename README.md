@@ -7,17 +7,20 @@ be used in production, more of a challenge.  I'm in no ways an expert and
 If you can go smaller let me know how you did it :grin:
 
 ### Results
-`448b` :sunglasses:
+`268b` :sunglasses:
 
 ```powershell
-❯ cargo run --release
+❯ cargo pack
+   Compiling rivet-mini v0.1.0 (**\min-sized-rust-windows\rivet-mini)
+    Finished `release` profile [optimized] target(s) in 1.69s
+     Running `target\release\packer.exe`
    Compiling min-sized-rust-windows v0.1.0 (**\min-sized-rust-windows)
-    Finished release [optimized] target(s) in 1.33s
-     Running `target\release\min-sized-rust-windows.exe`
-Hello World!
+    Finished `release` profile [optimized] target(s) in 3.10s
+Wrote 268 bytes to ./target/release/msrw.exe (40.2% reduction)
 
-❯ (Get-Item ".\target\release\min-sized-rust-windows.exe").Length
-448
+❯ .\target\release\msrw.exe && (Get-Item ".\target\release\msrw.exe").Length
+Hello World!
+268
 ```
 
 ### Strategies
@@ -47,12 +50,12 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * Drop debug info in pe header.
   * Add `/EMITPOGOPHASEINFO /DEBUG:NONE` flags.
   * Credits to @Frago9876543210 for finding, and implementing this.
+* Custom Packer (`rivet-mini`)
+  * We implemented a custom packer that overlaps the PE header with the DOS header and trims the Optional Header to the absolute minimum.
+  * It also shifts sections to close gaps and merges overlay data.
+  * Achieved 268 bytes.
 
-    
 ### Future
-* Using strategies shown in [[2]](https://github.com/pts/pts-tinype) we _could_ post process
-  the exe and merge headers to get closer to the 600-500b mark although we start straying
-  away from the goal of this project.
 * Provided the call signature of `ZwWriteFile` I could use `build.rs` to make a script to
   dynamically resolve the syscall number from `ntdll` using something like [iced-x86](https://crates.io/crates/iced-x86).
 * Go pure assembly (drop type definitions for PEB).
@@ -72,3 +75,5 @@ I'm excluding basic strategies here such as enabling lto and setting `opt-level 
 * @ironhaven - Brought binary size from `560b` -> `536b` :grin:
 * @StackOverflowExcept1on - Brought binary size from `536b` -> `464b` :grin:
 * @realJoshByrnes - Brought binary size from `464b` -> `448b` :grin:
+
+* @realJoshByrnes (`rivet-mini` packer) - Brought binary size from `448b` -> `268b` :rocket:
