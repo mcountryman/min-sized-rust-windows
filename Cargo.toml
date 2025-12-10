@@ -1,5 +1,6 @@
 [workspace]
-members = ["rivet-mini"]
+members = [".", "rivet-mini"]
+default-members = ["."]
 
 [[bin]]
 name = "msrw-unpacked"

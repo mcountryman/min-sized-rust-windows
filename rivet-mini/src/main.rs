@@ -29,29 +29,27 @@ use std::slice;
 /// - File read errors (e.g., missing or inaccessible input file).
 /// - Invalid DOS or PE signatures.
 /// - Invalid header offsets or file sizes.
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
   // Build the project first
   let status = Command::new("cargo")
     .args(["build", "--release", "--bin", "msrw-unpacked"])
-    .status()?;
+    .status()
+    .expect("Failed to execute cargo build");
 
   if !status.success() {
-    return Err(format!("Build failed with exit code: {:?}", status.code()).into());
+    panic!("Build failed with exit code: {:?}", status.code());
   }
 
   let input_path = "./target/release/msrw-unpacked.exe";
   // Validate input_path is a regular file and not a symlink
-  if !fs::exists(input_path)? {
-    return Err(format!("Input file does not exist: {}", input_path).into());
+  if !fs::exists(input_path).unwrap() {
+    panic!("Input file does not exist: {}", input_path);
   }
-  let input_meta = fs::symlink_metadata(input_path)?;
+  let input_meta = fs::symlink_metadata(input_path).unwrap();
   if !input_meta.is_file() || input_meta.file_type().is_symlink() {
-    return Err(
-      format!(
-        "Input path '{}' is not a regular file or is a symlink",
-        input_path
-      )
-      .into(),
+    panic!(
+      "Input path '{}' is not a regular file or is a symlink",
+      input_path
     );
   }
 
@@ -60,38 +58,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   if let Ok(output_meta) = fs::symlink_metadata(output_path)
     && (!output_meta.is_file() || output_meta.file_type().is_symlink())
   {
-    return Err(
-      format!(
-        "Output path '{}' exists and is not a regular file or is a symlink",
-        output_path
-      )
-      .into(),
+    panic!(
+      "Output path '{}' exists and is not a regular file or is a symlink",
+      output_path
     );
   }
 
   // println!("Reading inputs from {}", input_path);
-  let buffer = fs::read(input_path)?;
+  let buffer = fs::read(input_path).unwrap();
 
   if buffer.len() < std::mem::size_of::<pe::ImageDosHeader>() {
-    return Err("File too small".into());
+    panic!("File too small");
   }
 
   // Parse Headers
   let dos_header =
     unsafe { ptr::read_unaligned(buffer.as_ptr() as *const pe::ImageDosHeader) };
   if dos_header.e_magic != pe::IMAGE_DOS_SIGNATURE {
-    return Err("Invalid DOS signature".into());
+    panic!("Invalid DOS signature");
   }
 
   let pe_header_offset = dos_header.e_lfanew as usize;
   if pe_header_offset + std::mem::size_of::<u32>() > buffer.len() {
-    return Err("Invalid PE header offset".into());
+    panic!("Invalid PE header offset");
   }
 
   let signature =
     unsafe { ptr::read_unaligned(buffer.as_ptr().add(pe_header_offset) as *const u32) };
   if signature != pe::IMAGE_NT_SIGNATURE {
-    return Err("Invalid PE signature".into());
+    panic!("Invalid PE signature");
   }
 
   let file_header_offset = pe_header_offset + 4;
@@ -112,7 +107,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   let section_alignment = opt_header.section_alignment;
   let file_alignment = opt_header.file_alignment;
   if file_alignment == 0 {
-    return Err("Invalid file alignment (0)".into());
+    panic!("Invalid file alignment (0)");
   }
 
   let original_entry_point = opt_header.address_of_entry_point;
@@ -568,7 +563,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     out_buffer.push(0);
   }
   // println!("Final size with padding: {}", out_buffer.len());
-  fs::write(output_path, &out_buffer)?;
+  fs::write(output_path, &out_buffer).unwrap();
 
   let reduction = 100.0 - (out_buffer.len() as f64 / buffer.len() as f64 * 100.0);
   println!(
@@ -577,6 +572,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     output_path,
     reduction
   );
-
-  Ok(())
 }
