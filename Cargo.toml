@@ -1,3 +1,11 @@
+[workspace]
+members = [".", "rivet-mini"]
+default-members = ["."]
+
+[[bin]]
+name = "msrw-unpacked"
+path = "./src/main.rs"
+
 [package]
 name = "min-sized-rust-windows"
 version = "0.1.0"
